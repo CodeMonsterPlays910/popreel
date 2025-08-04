@@ -141,8 +141,9 @@
 
         .btn-primary:hover {
             background: linear-gradient(135deg, #7c3aed, #9333ea);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-secondary {
@@ -154,7 +155,9 @@
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Features Section */
@@ -187,9 +190,11 @@
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
             background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .feature-icon {
@@ -342,8 +347,77 @@
             }
         }
 
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+            }
+        }
+
         .fade-in {
-            animation: fadeInUp 0.6s ease-out;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .glow {
+            animation: glow 2s ease-in-out infinite;
         }
 
         /* Smooth scrolling */
@@ -359,7 +433,6 @@
             <a href="#" class="logo">PopReel</a>
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
-                <li><a href="#notify">Notify</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
@@ -369,29 +442,17 @@
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="container">
-            <h1 class="fade-in">PopReel is Coming Soon</h1>
+            <h1 class="fade-in float">PopReel is Coming Soon</h1>
             <p class="fade-in">Something amazing is brewing. We're working hard to bring you the next generation of digital experiences. Stay tuned for the launch!</p>
             <div class="cta-buttons fade-in">
-                <a href="#notify" class="btn btn-primary">Notify Me</a>
+                <a href="#about" class="btn btn-primary glow">Get Started</a>
                 <a href="#about" class="btn btn-secondary">Learn More</a>
             </div>
         </div>
     </section>
 
     <!-- Notify Section -->
-    <section id="notify" class="features">
-        <div class="container">
-            <h2>Get Notified When We Launch</h2>
-                            <div style="max-width: 500px; margin: 0 auto; text-align: center;">
-                <p style="font-size: 1.2rem; color: #cccccc; margin-bottom: 2rem;">Be the first to know when PopReel goes live. Sign up for early access and exclusive updates.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <input type="email" placeholder="Enter your email" style="padding: 12px 20px; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-size: 1rem; min-width: 250px; outline: none; transition: border-color 0.3s ease; background: rgba(255, 255, 255, 0.05); color: white;" id="emailInput">
-                    <button class="btn btn-primary" onclick="notifyUser()">Notify Me</button>
-                </div>
-                <p style="margin-top: 1rem; font-size: 0.9rem; color: #999999;">We'll never spam you. Unsubscribe anytime.</p>
-            </div>
-        </div>
-    </section>
+    
 
 
 
@@ -399,13 +460,13 @@
     <section id="about" class="about">
         <div class="container">
             <div class="about-content">
-                <div class="about-text">
+                <div class="about-text slide-in-left">
                     <h2>About PopReel</h2>
                     <p>PopReel is a cutting-edge platform designed to revolutionize digital experiences. We combine innovative technology with user-centered design to create solutions that matter.</p>
                     <p>Our team of experts is passionate about pushing the boundaries of what's possible, delivering solutions that not only meet today's needs but anticipate tomorrow's challenges.</p>
                     <p>We're currently in development, crafting something truly special. Join our community and be part of the journey from the beginning.</p>
                 </div>
-                <div class="about-image">
+                <div class="about-image slide-in-right pulse">
                     <span>🎬</span>
                 </div>
             </div>
@@ -423,21 +484,17 @@
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <p><a href="#home">Home</a></p>
-                    <p><a href="#notify">Notify</a></p>
-                    <p><a href="#about">About</a></p>
+                   
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
-                    <p>Email: hello@popreel.lol</p>
-                    <p>Follow us on social media</p>
+                    <p>Pinterest: popreel_us</p>
+                    <p>Follow us on Pinterest</p>
                 </div>
-                <div class="footer-section">
-                    <h3>Newsletter</h3>
-                    <p>Stay updated with our latest features and announcements.</p>
-                </div>
+                
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 PopReel. All rights reserved. | popreel.lol</p>
+                <p>&copy; 2025 PopReel. All rights reserved. | popreel.lol</p>
             </div>
         </div>
     </footer>
@@ -478,6 +535,7 @@
                 if (entry.isIntersecting) {
                     entry.target.style.opacity = '1';
                     entry.target.style.transform = 'translateY(0)';
+                    entry.target.classList.add('animate-in');
                 }
             });
         }, observerOptions);
@@ -486,31 +544,78 @@
         document.querySelectorAll('.feature-card, .about-text, .about-image').forEach(el => {
             el.style.opacity = '0';
             el.style.transform = 'translateY(30px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            el.style.transition = 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             observer.observe(el);
+        });
+
+        // Add staggered animation for feature cards
+        document.querySelectorAll('.feature-card').forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
         });
 
         // Add some interactive effects
         document.querySelectorAll('.feature-card').forEach(card => {
             card.addEventListener('mouseenter', function() {
-                this.style.boxShadow = '0 10px 30px rgba(139, 92, 246, 0.2)';
+                this.style.boxShadow = '0 20px 40px rgba(139, 92, 246, 0.3)';
+                this.style.transform = 'translateY(-8px) scale(1.02)';
             });
             
             card.addEventListener('mouseleave', function() {
                 this.style.boxShadow = 'none';
+                this.style.transform = 'translateY(0) scale(1)';
             });
         });
 
-        // Email notification function
-        function notifyUser() {
-            const email = document.getElementById('emailInput').value;
-            if (email && email.includes('@')) {
-                alert('Thanks! We\'ll notify you when PopReel launches. Check your email for confirmation.');
-                document.getElementById('emailInput').value = '';
-            } else {
-                alert('Please enter a valid email address.');
+        // Add smooth parallax effect to hero section
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            const rate = scrolled * -0.5;
+            hero.style.transform = `translateY(${rate}px)`;
+        });
+
+        // Add smooth cursor follow effect
+        document.addEventListener('mousemove', function(e) {
+            const cursor = document.createElement('div');
+            cursor.style.position = 'fixed';
+            cursor.style.width = '20px';
+            cursor.style.height = '20px';
+            cursor.style.background = 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, transparent 70%)';
+            cursor.style.borderRadius = '50%';
+            cursor.style.pointerEvents = 'none';
+            cursor.style.zIndex = '9999';
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+            cursor.style.transition = 'all 0.1s ease';
+            
+            document.body.appendChild(cursor);
+            
+            setTimeout(() => {
+                cursor.remove();
+            }, 100);
+        });
+
+        // Add typing effect to hero title
+        function typeWriter(element, text, speed = 100) {
+            let i = 0;
+            element.innerHTML = '';
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
             }
+            type();
         }
+
+        // Initialize typing effect when page loads
+        window.addEventListener('load', function() {
+            const heroTitle = document.querySelector('.hero h1');
+            const originalText = heroTitle.textContent;
+            typeWriter(heroTitle, originalText, 80);
+        });
     </script>
 </body>
 </html>
