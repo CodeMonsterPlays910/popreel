@@ -707,54 +707,120 @@
             }
         });
 
-        function uploadVideo() {
+        async function uploadVideo() {
             const uploadText = document.getElementById('uploadText');
             const uploadLoading = document.getElementById('uploadLoading');
+            const fileInput = document.getElementById('fileInput');
+            const titleInput = document.querySelector('input[placeholder="Video title..."]');
+            const descriptionInput = document.querySelector('textarea[placeholder="Video description..."]');
+            
+            const file = fileInput.files[0];
+            const title = titleInput.value;
+            const description = descriptionInput.value;
+            
+            if (!file || !title) {
+                alert('Please select a video file and enter a title');
+                return;
+            }
             
             uploadText.style.display = 'none';
             uploadLoading.style.display = 'inline-block';
             
-            // Simulate upload
-            setTimeout(() => {
+            try {
+                const formData = new FormData();
+                formData.append('video', file);
+                formData.append('title', title);
+                formData.append('description', description);
+                formData.append('category', getCurrentCategory());
+                formData.append('creator', '@user' + Math.floor(Math.random() * 1000));
+                
+                const response = await fetch('/api/videos/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    uploadText.style.display = 'inline';
+                    uploadLoading.style.display = 'none';
+                    closeUploadModal();
+                    alert('Video uploaded successfully!');
+                    
+                    // Reload videos to show the new upload
+                    loadVideos(getCurrentCategory(), document.getElementById('searchInput').value);
+                    
+                    // Reset form
+                    fileInput.value = '';
+                    titleInput.value = '';
+                    descriptionInput.value = '';
+                } else {
+                    throw new Error(result.error || 'Upload failed');
+                }
+            } catch (error) {
                 uploadText.style.display = 'inline';
                 uploadLoading.style.display = 'none';
-                closeUploadModal();
-                alert('Video uploaded successfully!');
-            }, 2000);
-        }
-
-        // Like Function
-        function toggleLike(button) {
-            const icon = button.querySelector('i');
-            const count = button.querySelector('span');
-            
-            if (button.classList.contains('liked')) {
-                button.classList.remove('liked');
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                count.textContent = (parseInt(count.textContent) - 1).toString();
-            } else {
-                button.classList.add('liked');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                count.textContent = (parseInt(count.textContent) + 1).toString();
+                alert('Upload failed: ' + error.message);
             }
         }
 
-        // Search Function
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const videoCards = document.querySelectorAll('.video-card');
+        // Like Function
+        async function toggleLike(button, videoId) {
+            const icon = button.querySelector('i');
+            const count = button.querySelector('span');
+            const isLiked = button.classList.contains('liked');
             
-            videoCards.forEach(card => {
-                const title = card.querySelector('.video-title').textContent.toLowerCase();
-                if (title.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
+            try {
+                const response = await fetch(`/api/videos/${videoId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: isLiked ? 'unlike' : 'like'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (isLiked) {
+                        button.classList.remove('liked');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    } else {
+                        button.classList.add('liked');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    }
+                    count.textContent = formatNumber(data.likes);
                 }
-            });
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
+        // Show comments function
+        function showComments(videoId) {
+            // This would open a comments modal
+            alert(`Comments for video ${videoId} - Feature coming soon!`);
+        }
+
+        // Search Function
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = e.target.value;
+                loadVideos(getCurrentCategory(), searchTerm);
+            }, 500);
         });
+
+        // Get current category
+        function getCurrentCategory() {
+            const activeBtn = document.querySelector('.category-btn.active');
+            return activeBtn ? activeBtn.dataset.category : 'all';
+        }
 
         // Category Filter
         document.querySelectorAll('.category-btn').forEach(btn => {
@@ -765,22 +831,82 @@
                 btn.classList.add('active');
                 
                 const category = btn.dataset.category;
-                const videoCards = document.querySelectorAll('.video-card');
-                
-                if (category === 'all') {
-                    videoCards.forEach(card => card.style.display = 'block');
-                } else {
-                    // Simulate category filtering
-                    videoCards.forEach((card, index) => {
-                        if (index % 2 === 0) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                }
+                const searchTerm = document.getElementById('searchInput').value;
+                loadVideos(category, searchTerm);
             });
         });
+
+        // Load videos from database
+        async function loadVideos(category = 'all', search = '') {
+            try {
+                const params = new URLSearchParams();
+                if (category !== 'all') params.append('category', category);
+                if (search) params.append('search', search);
+                
+                const response = await fetch(`/api/videos?${params}`);
+                const videos = await response.json();
+                
+                const videoGrid = document.getElementById('videoGrid');
+                videoGrid.innerHTML = '';
+                
+                videos.forEach(video => {
+                    const videoCard = document.createElement('div');
+                    videoCard.className = 'video-card fade-in';
+                    videoCard.innerHTML = `
+                        <div class="video-thumbnail">
+                            <img src="${video.thumbnail_url}" alt="Video thumbnail">
+                            <div class="play-button">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">${video.title}</h3>
+                            <div class="video-meta">
+                                <span>${video.creator}</span>
+                                <span>${formatTimeAgo(video.created_at)}</span>
+                            </div>
+                            <div class="video-actions">
+                                <button class="action-btn" onclick="toggleLike(this, ${video.id})" data-video-id="${video.id}">
+                                    <i class="fas fa-heart"></i>
+                                    <span>${formatNumber(video.likes)}</span>
+                                </button>
+                                <button class="action-btn" onclick="showComments(${video.id})">
+                                    <i class="fas fa-comment"></i>
+                                    <span>Comments</span>
+                                </button>
+                                <button class="action-btn">
+                                    <i class="fas fa-share"></i>
+                                    <span>Share</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    videoGrid.appendChild(videoCard);
+                });
+            } catch (error) {
+                console.error('Error loading videos:', error);
+            }
+        }
+
+        // Format time ago
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+            return `${Math.floor(diffInSeconds / 2592000)}mo ago`;
+        }
+
+        // Format numbers
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
 
         // Video Play Function
         document.querySelectorAll('.video-card').forEach(card => {
@@ -790,51 +916,10 @@
             });
         });
 
-        // Infinite Scroll (simulated)
-        let page = 1;
-        window.addEventListener('scroll', () => {
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-                loadMoreVideos();
-            }
+        // Load initial videos
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVideos();
         });
-
-        function loadMoreVideos() {
-            // Simulate loading more videos
-            const videoGrid = document.getElementById('videoGrid');
-            const newVideo = document.createElement('div');
-            newVideo.className = 'video-card fade-in';
-            newVideo.innerHTML = `
-                <div class="video-thumbnail">
-                    <img src="https://picsum.photos/300/200?random=${Math.floor(Math.random() * 100)}" alt="Video thumbnail">
-                    <div class="play-button">
-                        <i class="fas fa-play"></i>
-                    </div>
-                </div>
-                <div class="video-info">
-                    <h3 class="video-title">New Video ${page}</h3>
-                    <div class="video-meta">
-                        <span>@user${page}</span>
-                        <span>Just now</span>
-                    </div>
-                    <div class="video-actions">
-                        <button class="action-btn" onclick="toggleLike(this)">
-                            <i class="fas fa-heart"></i>
-                            <span>0</span>
-                        </button>
-                        <button class="action-btn">
-                            <i class="fas fa-comment"></i>
-                            <span>0</span>
-                        </button>
-                        <button class="action-btn">
-                            <i class="fas fa-share"></i>
-                            <span>Share</span>
-                        </button>
-                    </div>
-                </div>
-            `;
-            videoGrid.appendChild(newVideo);
-            page++;
-        }
 
         // Keyboard Shortcuts
         document.addEventListener('keydown', (e) => {
