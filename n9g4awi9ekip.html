@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popreel.lol - Share Your Moments</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom Cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+            filter: blur(0.5px);
+        }
+
+        .custom-cursor.hover {
+            transform: scale(2);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            border: none;
+            font-weight: 600;
+            cursor: none;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Main Content */
+        .main-container {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .video-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .video-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.2);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #333;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-card:hover .play-button {
+            opacity: 1;
+        }
+
+        .video-info {
+            padding: 1.5rem;
+        }
+
+        .video-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .action-btn.liked {
+            color: #ff6b6b;
+        }
+
+        /* Upload Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: none;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn-modal {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: none;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 2rem;
+        }
+
+        .search-bar {
+            width: 100%;
+            max-width: 600px;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            color: #ffffff;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-bar::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: none;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border-color: transparent;
+        }
+
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ff6b6b;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">Popreel.lol</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#trending">Trending</a></li>
+                <li><a href="#following">Following</a></li>
+                <li><a href="#profile">Profile</a></li>
+                <li><button class="upload-btn" onclick="openUploadModal()">
+                    <i class="fas fa-plus"></i> Upload
+                </button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Search and Categories -->
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="Search videos..." id="searchInput">
+        </div>
+
+        <div class="categories">
+            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="music">Music</button>
+            <button class="category-btn" data-category="comedy">Comedy</button>
+            <button class="category-btn" data-category="gaming">Gaming</button>
+            <button class="category-btn" data-category="lifestyle">Lifestyle</button>
+            <button class="category-btn" data-category="tech">Tech</button>
+        </div>
+
+        <!-- Video Grid -->
+        <div class="video-grid" id="videoGrid">
+            <!-- Sample Videos -->
+            <div class="video-card fade-in">
+                <div class="video-thumbnail">
+                    <img src="https://picsum.photos/300/200?random=1" alt="Video thumbnail">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">Amazing Sunset Timelapse</h3>
+                    <div class="video-meta">
+                        <span>@user123</span>
+                        <span>2 hours ago</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="toggleLike(this)">
+                            <i class="fas fa-heart"></i>
+                            <span>1.2k</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>234</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card fade-in">
+                <div class="video-thumbnail">
+                    <img src="https://picsum.photos/300/200?random=2" alt="Video thumbnail">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">Cooking Tutorial: Pasta Carbonara</h3>
+                    <div class="video-meta">
+                        <span>@chef_mike</span>
+                        <span>5 hours ago</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="toggleLike(this)">
+                            <i class="fas fa-heart"></i>
+                            <span>3.4k</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>567</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card fade-in">
+                <div class="video-thumbnail">
+                    <img src="https://picsum.photos/300/200?random=3" alt="Video thumbnail">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">Gaming Highlights: Epic Win!</h3>
+                    <div class="video-meta">
+                        <span>@gamer_pro</span>
+                        <span>1 day ago</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="toggleLike(this)">
+                            <i class="fas fa-heart"></i>
+                            <span>5.6k</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>892</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card fade-in">
+                <div class="video-thumbnail">
+                    <img src="https://picsum.photos/300/200?random=4" alt="Video thumbnail">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">Tech Review: Latest Smartphone</h3>
+                    <div class="video-meta">
+                        <span>@tech_reviewer</span>
+                        <span>2 days ago</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="toggleLike(this)">
+                            <i class="fas fa-heart"></i>
+                            <span>2.8k</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>445</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card fade-in">
+                <div class="video-thumbnail">
+                    <img src="https://picsum.photos/300/200?random=5" alt="Video thumbnail">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">Dance Challenge: Viral Move</h3>
+                    <div class="video-meta">
+                        <span>@dance_queen</span>
+                        <span>3 days ago</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="toggleLike(this)">
+                            <i class="fas fa-heart"></i>
+                            <span>8.9k</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>1.2k</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card fade-in">
+                <div class="video-thumbnail">
+                    <img src="https://picsum.photos/300/200?random=6" alt="Video thumbnail">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">Travel Vlog: Paris Adventure</h3>
+                    <div class="video-meta">
+                        <span>@travel_buddy</span>
+                        <span>1 week ago</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="toggleLike(this)">
+                            <i class="fas fa-heart"></i>
+                            <span>4.3k</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>678</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload Video</h2>
+                <button class="close-btn" onclick="closeUploadModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <p>Click to upload video or drag and drop</p>
+                <p style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.5);">
+                    MP4, MOV, AVI up to 100MB
+                </p>
+            </div>
+            <input type="file" id="fileInput" class="file-input" accept="video/*">
+            <input type="text" placeholder="Video title..." style="width: 100%; padding: 1rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: white;">
+            <textarea placeholder="Video description..." style="width: 100%; padding: 1rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: white; height: 100px; resize: none;"></textarea>
+            <button class="upload-btn-modal" onclick="uploadVideo()">
+                <span id="uploadText">Upload Video</span>
+                <span id="uploadLoading" class="loading" style="display: none;"></span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Custom Cursor
+        const cursor = document.querySelector('.custom-cursor');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+        });
+
+        document.querySelectorAll('a, button, .video-card').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover');
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover');
+            });
+        });
+
+        // Upload Modal Functions
+        function openUploadModal() {
+            document.getElementById('uploadModal').style.display = 'block';
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('uploadModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeUploadModal();
+            }
+        });
+
+        // File Upload
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                console.log('File selected:', file.name);
+            }
+        });
+
+        function uploadVideo() {
+            const uploadText = document.getElementById('uploadText');
+            const uploadLoading = document.getElementById('uploadLoading');
+            
+            uploadText.style.display = 'none';
+            uploadLoading.style.display = 'inline-block';
+            
+            // Simulate upload
+            setTimeout(() => {
+                uploadText.style.display = 'inline';
+                uploadLoading.style.display = 'none';
+                closeUploadModal();
+                alert('Video uploaded successfully!');
+            }, 2000);
+        }
+
+        // Like Function
+        function toggleLike(button) {
+            const icon = button.querySelector('i');
+            const count = button.querySelector('span');
+            
+            if (button.classList.contains('liked')) {
+                button.classList.remove('liked');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                count.textContent = (parseInt(count.textContent) - 1).toString();
+            } else {
+                button.classList.add('liked');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                count.textContent = (parseInt(count.textContent) + 1).toString();
+            }
+        }
+
+        // Search Function
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const videoCards = document.querySelectorAll('.video-card');
+            
+            videoCards.forEach(card => {
+                const title = card.querySelector('.video-title').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Category Filter
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+                
+                const category = btn.dataset.category;
+                const videoCards = document.querySelectorAll('.video-card');
+                
+                if (category === 'all') {
+                    videoCards.forEach(card => card.style.display = 'block');
+                } else {
+                    // Simulate category filtering
+                    videoCards.forEach((card, index) => {
+                        if (index % 2 === 0) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        });
+
+        // Video Play Function
+        document.querySelectorAll('.video-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const title = card.querySelector('.video-title').textContent;
+                alert(`Playing: ${title}`);
+            });
+        });
+
+        // Infinite Scroll (simulated)
+        let page = 1;
+        window.addEventListener('scroll', () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+                loadMoreVideos();
+            }
+        });
+
+        function loadMoreVideos() {
+            // Simulate loading more videos
+            const videoGrid = document.getElementById('videoGrid');
+            const newVideo = document.createElement('div');
+            newVideo.className = 'video-card fade-in';
+            newVideo.innerHTML = `
+                <div class="video-thumbnail">
+                    <img src="https://picsum.photos/300/200?random=${Math.floor(Math.random() * 100)}" alt="Video thumbnail">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title">New Video ${page}</h3>
+                    <div class="video-meta">
+                        <span>@user${page}</span>
+                        <span>Just now</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="toggleLike(this)">
+                            <i class="fas fa-heart"></i>
+                            <span>0</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>0</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            videoGrid.appendChild(newVideo);
+            page++;
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeUploadModal();
+            }
+            if (e.key === 'u' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                openUploadModal();
+            }
+        });
+    </script>
+</body>
+</html>
